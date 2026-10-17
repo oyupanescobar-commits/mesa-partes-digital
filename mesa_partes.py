@@ -167,29 +167,34 @@ def registrar_expediente(expedientes):
 
 def buscar_expediente(expedientes):
 
-    print("\n===== BÚSQUEDA =====")
+    while True:
 
-    codigo = input(
-        "Ingrese código (0 para volver): "
-    ).strip()
+        print("\n===== BÚSQUEDA =====")
+        print("1. Buscar por código")
+        print("2. Buscar por remitente")
+        print("3. Buscar por asunto")
+        print("4. Buscar por fecha")
+        print("0. Volver")
 
-    if codigo == "0":
-        return
+        opcion = input("Seleccione una opción: ")
 
-    for expediente in expedientes:
+        if opcion == "1":
+            buscar_por_codigo(expedientes)
 
-        if expediente["codigo"] == codigo:
+        elif opcion == "2":
+            buscar_por_remitente(expedientes)
 
-            print("\nEXPEDIENTE ENCONTRADO")
-            print("-" * 40)
-            print("Código:", expediente["codigo"])
-            print("Remitente:", expediente["remitente"])
-            print("Asunto:", expediente["asunto"])
-            print("Fecha:", expediente["fecha"])
+        elif opcion == "3":
+            buscar_por_asunto(expedientes)
 
+        elif opcion == "4":
+            buscar_por_fecha(expedientes)
+
+        elif opcion == "0":
             return
 
-    print("\nNo se encontró el expediente.")
+        else:
+            print("\n❌ Opción inválida.")
 
 
 # ==================================
@@ -347,6 +352,110 @@ def eliminar_expediente(expedientes):
             return
 
     print("\n❌ Expediente no encontrado.")
+
+def buscar_por_codigo(expedientes):
+
+    codigo = input(
+        "\nCódigo (0 para volver): "
+    ).strip()
+
+    if codigo == "0":
+        return
+
+    for expediente in expedientes:
+
+        if expediente["codigo"] == codigo:
+
+            print("\n✅ Expediente encontrado")
+            print("-" * 40)
+            print("Código:", expediente["codigo"])
+            print("Remitente:", expediente["remitente"])
+            print("Asunto:", expediente["asunto"])
+            print("Fecha:", expediente["fecha"])
+
+            return
+
+    print("\n❌ No encontrado.")
+
+def buscar_por_remitente(expedientes):
+
+    remitente = input(
+        "\nRemitente (0 para volver): "
+    ).strip().lower()
+
+    if remitente == "0":
+        return
+
+    encontrados = False
+
+    for expediente in expedientes:
+
+        if remitente in expediente["remitente"].lower():
+
+            print("-" * 40)
+            print("Código:", expediente["codigo"])
+            print("Remitente:", expediente["remitente"])
+            print("Asunto:", expediente["asunto"])
+            print("Fecha:", expediente["fecha"])
+
+            encontrados = True
+
+    if not encontrados:
+        print("\n❌ No se encontraron resultados.")
+
+def buscar_por_asunto(expedientes):
+
+    asunto = input(
+        "\nAsunto (0 para volver): "
+    ).strip().lower()
+
+    if asunto == "0":
+        return
+
+    encontrados = False
+
+    for expediente in expedientes:
+
+        if asunto in expediente["asunto"].lower():
+
+            print("-" * 40)
+            print("Código:", expediente["codigo"])
+            print("Remitente:", expediente["remitente"])
+            print("Asunto:", expediente["asunto"])
+            print("Fecha:", expediente["fecha"])
+
+            encontrados = True
+
+    if not encontrados:
+        print("\n❌ No se encontraron resultados.")
+
+def buscar_por_fecha(expedientes):
+
+    fecha = input(
+        "\nFecha (DD/MM/AAAA): "
+    ).strip()
+
+    if fecha == "0":
+        return
+
+    encontrados = False
+
+    for expediente in expedientes:
+
+        if expediente["fecha"] == fecha:
+
+            print("-" * 40)
+            print("Código:", expediente["codigo"])
+            print("Remitente:", expediente["remitente"])
+            print("Asunto:", expediente["asunto"])
+            print("Fecha:", expediente["fecha"])
+
+            encontrados = True
+
+    if not encontrados:
+        print("\n❌ No se encontraron resultados.")
+
+
 # ==================================
 # MENÚ PRINCIPAL
 # ==================================
