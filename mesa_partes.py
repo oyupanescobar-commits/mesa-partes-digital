@@ -36,7 +36,16 @@ class Expediente:
             "documento": self.documento,
             "estado": self.estado
         }
+class MesaPartes:
 
+    def __init__(self):
+
+        self.expedientes = cargar_expedientes()
+
+    def total_expedientes(self):
+
+        return len(self.expedientes)
+    
 ARCHIVO = "expedientes.csv"
 ARCHIVO_BITACORA = "bitacora.txt"
 
@@ -182,7 +191,7 @@ def validar_dni(dni):
 # REGISTRAR EXPEDIENTE
 # ==================================
 
-def registrar_expediente(expedientes):
+def registrar_expediente(self):
 
     print("\n===== REGISTRO DE EXPEDIENTE =====")
 
@@ -194,7 +203,7 @@ def registrar_expediente(expedientes):
         if codigo == "0":
             return
 
-        if validar_codigo(codigo, expedientes):
+        if validar_codigo(codigo, self.expedientes):
             break
 
     while True:
@@ -283,11 +292,11 @@ def registrar_expediente(expedientes):
         documento
     )
 
-    expedientes.append(
+    self.expedientes.append(
         expediente.to_dict()
     )
 
-    if guardar_expedientes(expedientes):
+    if guardar_expedientes(self.expedientes):
 
         registrar_bitacora(
             "REGISTRO",
@@ -305,7 +314,7 @@ def registrar_expediente(expedientes):
 # BUSCAR EXPEDIENTE
 # ==================================
 
-def buscar_expediente(expedientes):
+def buscar_expediente(self):
 
     while True:
 
@@ -321,22 +330,22 @@ def buscar_expediente(expedientes):
         opcion = input("Seleccione una opción: ")
 
         if opcion == "1":
-            buscar_por_codigo(expedientes)
+            buscar_por_codigo(self.expedientes)
 
         elif opcion == "2":
-            buscar_por_dni(expedientes)
+            buscar_por_dni(self.expedientes)
 
         elif opcion == "3":
-            buscar_por_remitente(expedientes)
+            buscar_por_remitente(self.expedientes)
 
         elif opcion == "4":
-            buscar_por_sede(expedientes)
+            buscar_por_sede(self.expedientes)
 
         elif opcion == "5":
-            buscar_por_asunto(expedientes)
+            buscar_por_asunto(self.expedientes)
 
         elif opcion == "6":
-            buscar_por_fecha(expedientes)
+            buscar_por_fecha(self.expedientes)
 
         elif opcion == "0":
             return
@@ -349,7 +358,7 @@ def buscar_expediente(expedientes):
 # ORDENAR EXPEDIENTES
 # ==================================
 
-def ordenar_expedientes(expedientes):
+def ordenar_expedientes(self):
 
     print("\n===== ORDENAMIENTO =====")
     print("1. Por código")
@@ -361,19 +370,19 @@ def ordenar_expedientes(expedientes):
 
     if opcion == "1":
 
-        expedientes.sort(
+        self.expedientes.sort(
             key=lambda x: x["codigo"]
         )
 
     elif opcion == "2":
 
-        expedientes.sort(
+        self.expedientes.sort(
             key=lambda x: x["remitente"].lower()
         )
 
     elif opcion == "3":
 
-        expedientes.sort(
+        self.expedientes.sort(
             key=lambda x: datetime.strptime(
                 x["fecha"],
                 "%d/%m/%Y"
@@ -387,7 +396,7 @@ def ordenar_expedientes(expedientes):
         print("Opción inválida.")
         return
 
-    guardar_expedientes(expedientes)
+    guardar_expedientes(self.expedientes)
 
     print("\n✅ Expedientes ordenados correctamente.")
 
@@ -396,15 +405,15 @@ def ordenar_expedientes(expedientes):
 # REPORTE
 # ==================================
 
-def mostrar_reporte(expedientes):
+def mostrar_reporte(self):
 
     print("\n===== REPORTE DE EXPEDIENTES =====")
 
-    if len(expedientes) == 0:
+    if len(self.expedientes) == 0:
         print("No existen expedientes registrados.")
         return
 
-    for expediente in expedientes:
+    for expediente in self.expedientes:
 
         print("-" * 50)
         print("Código    :", expediente["codigo"])
@@ -417,9 +426,9 @@ def mostrar_reporte(expedientes):
         print("Estado    :", expediente["estado"])
 
     print("-" * 50)
-    print(f"Total de expedientes: {len(expedientes)}")
+    print(f"Total de expedientes: {len(self.expedientes)}")
 
-def modificar_expediente(expedientes):
+def modificar_expediente(self):
 
     print("\n===== MODIFICAR EXPEDIENTE =====")
 
@@ -430,7 +439,7 @@ def modificar_expediente(expedientes):
     if codigo == "0":
             return
     
-    for expediente in expedientes:
+    for expediente in self.expedientes:
 
         if expediente["codigo"] == codigo:
 
@@ -458,7 +467,7 @@ def modificar_expediente(expedientes):
                 if validar_fecha(nueva_fecha):
                     expediente["fecha"] = nueva_fecha
 
-            guardar_expedientes(expedientes)
+            guardar_expedientes(self.expedientes)
             registrar_bitacora(
                             "MODIFICACION",
                             codigo
@@ -972,4 +981,5 @@ def menu():
 # ==================================
 
 if __name__ == "__main__":
-    menu()
+    sistema = MesaPartes()
+    sistema.menu()
