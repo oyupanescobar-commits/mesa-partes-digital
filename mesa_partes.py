@@ -65,9 +65,6 @@ def registrar_bitacora(accion, codigo):
             f"{accion} - "
             f"{codigo}\n"
         )
-        archivo.write(texto)
-        print(texto)
-
 # ==================================
 # VALIDACIONES
 # ==================================
@@ -524,6 +521,53 @@ def mostrar_estadisticas(expedientes):
         f"{mas_reciente['fecha']}"
     )
 
+def exportar_reporte_txt(expedientes):
+
+    with open(
+        "reporte_expedientes.txt",
+        "w",
+        encoding="utf-8"
+    ) as archivo:
+
+        archivo.write("=" * 50 + "\n")
+        archivo.write("REPORTE DE EXPEDIENTES\n")
+        archivo.write("=" * 50 + "\n\n")
+
+        if len(expedientes) == 0:
+
+            archivo.write(
+                "No existen expedientes registrados.\n"
+            )
+
+        else:
+
+            for expediente in expedientes:
+
+                archivo.write(
+                    f"Código: "
+                    f"{expediente['codigo']}\n"
+                )
+
+                archivo.write(
+                    f"Remitente: "
+                    f"{expediente['remitente']}\n"
+                )
+
+                archivo.write(
+                    f"Asunto: "
+                    f"{expediente['asunto']}\n"
+                )
+
+                archivo.write(
+                    f"Fecha: "
+                    f"{expediente['fecha']}\n"
+                )
+
+                archivo.write("-" * 50 + "\n")
+
+    print(
+        "\n✅ Reporte exportado correctamente."
+    )
 # ==================================
 # MENÚ PRINCIPAL
 # ==================================
@@ -545,7 +589,8 @@ def menu():
         print("5. Modificar expedientes")
         print("6. Eliminar expedientes")
         print("7. Estadisticas de expedientes")
-        print("8. Salir")
+        print("8. Exportar reporte a texto")
+        print("9. Salir")
 
         opcion = input("\nSeleccione una opción: ")
 
@@ -570,7 +615,10 @@ def menu():
         elif opcion == "7":
             mostrar_estadisticas(expedientes)
 
-        elif opcion == "8":
+        elif opcion == "8" :
+            exportar_reporte_txt(expedientes)
+            
+        elif opcion == "9":
             guardar_expedientes(expedientes)
 
             print("\nGracias por usar el sistema.")

@@ -1,0 +1,34 @@
+==================================================
+REPORTE DE EXPEDIENTES
+==================================================
+
+Código: EXP001
+Remitente: Oscar Miguel
+Asunto: Actualizacion de datos
+Fecha: 18/10/2026
+--------------------------------------------------
+Código: EXP002
+Remitente: Ana Juarez
+Asunto: Renovacion de permiso
+Fecha: 19/10/2026
+--------------------------------------------------
+Código: EXP999
+Remitente: BITACOR
+Asunto: PRUEBA
+Fecha: 17/10/2026
+--------------------------------------------------
+Código: EXP123
+Remitente: Jose Miguel
+Asunto: Permiso municipal
+Fecha: 17/10/2026
+--------------------------------------------------
+Código: EXP234
+Remitente: Rosa Maria
+Asunto: Prueba
+Fecha: 16/10/2026
+--------------------------------------------------
+Código: EXP567
+Remitente: Daniel
+Asunto: Prueba2
+Fecha: 16/10/2026
+--------------------------------------------------
