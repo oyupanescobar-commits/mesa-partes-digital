@@ -32,7 +32,7 @@ def guardar_expedientes(expedientes):
     try:
         with open(ARCHIVO, mode="w", newline="", encoding="utf-8") as archivo:
 
-            campos = ["codigo", "dni", "remitente","sede","asunto", "fecha", "documento"]
+            campos = ["codigo", "dni", "remitente","sede","asunto", "fecha", "documento", "estado"]
 
             escritor = csv.DictWriter(
                 archivo,
@@ -245,7 +245,8 @@ def registrar_expediente(expedientes):
         "sede": sede,
         "asunto": asunto,
         "fecha": fecha,
-        "documento": documento
+        "documento": documento,
+        "estado": "pendiente",
     }
 
     expedientes.append(expediente)
@@ -274,9 +275,11 @@ def buscar_expediente(expedientes):
 
         print("\n===== BÚSQUEDA =====")
         print("1. Buscar por código")
-        print("2. Buscar por remitente")
-        print("3. Buscar por asunto")
-        print("4. Buscar por fecha")
+        print("2. Buscar por DNI")
+        print("3. Buscar por remitente")
+        print("4. Buscar por sede")
+        print("5. Buscar por asunto")
+        print("6. Buscar por fecha")
         print("0. Volver")
 
         opcion = input("Seleccione una opción: ")
@@ -285,12 +288,18 @@ def buscar_expediente(expedientes):
             buscar_por_codigo(expedientes)
 
         elif opcion == "2":
-            buscar_por_remitente(expedientes)
+            buscar_por_dni(expedientes)
 
         elif opcion == "3":
-            buscar_por_asunto(expedientes)
+            buscar_por_remitente(expedientes)
 
         elif opcion == "4":
+            buscar_por_sede(expedientes)
+
+        elif opcion == "5":
+            buscar_por_asunto(expedientes)
+
+        elif opcion == "6":
             buscar_por_fecha(expedientes)
 
         elif opcion == "0":
@@ -369,6 +378,7 @@ def mostrar_reporte(expedientes):
         print("Asunto    :", expediente["asunto"])
         print("Fecha     :", expediente["fecha"])
         print("Documento :", expediente["documento"])
+        print("Estado    :", expediente["estado"])
 
     print("-" * 50)
     print(f"Total de expedientes: {len(expedientes)}")
@@ -421,7 +431,30 @@ def modificar_expediente(expedientes):
             print("\n✅ Expediente modificado correctamente.")
             return
         
-        
+        print("\n===== NUEVO ESTADO =====")
+        print("1. Pendiente")
+        print("2. En Proceso")
+        print("3. Atendido")
+        print("4. Observado")
+        print("5. Archivado")
+
+    opcion_estado = input(
+    "Seleccione un estado: "
+)
+    if opcion_estado == "1":
+        expediente["estado"] = "Pendiente"
+
+    elif opcion_estado == "2":
+        expediente["estado"] = "En Proceso"
+
+    elif opcion_estado == "3":
+        expediente["estado"] = "Atendido"
+
+    elif opcion_estado == "4":
+        expediente["estado"] = "Observado"
+
+    elif opcion_estado == "5":
+        expediente["estado"] = "Archivado"
 
     print("\n❌ Expediente no encontrado.")
 
@@ -514,7 +547,9 @@ def buscar_por_remitente(expedientes):
 
             print("-" * 40)
             print("Código:", expediente["codigo"])
+            print("DNI:", expediente["dni"])
             print("Remitente:", expediente["remitente"])
+            print("Sede:", expediente["sede"])
             print("Asunto:", expediente["asunto"])
             print("Fecha:", expediente["fecha"])
 
@@ -540,7 +575,9 @@ def buscar_por_asunto(expedientes):
 
             print("-" * 40)
             print("Código:", expediente["codigo"])
+            print("DNI:", expediente["dni"])
             print("Remitente:", expediente["remitente"])
+            print("Sede:", expediente["sede"])
             print("Asunto:", expediente["asunto"])
             print("Fecha:", expediente["fecha"])
 
@@ -566,7 +603,9 @@ def buscar_por_fecha(expedientes):
 
             print("-" * 40)
             print("Código:", expediente["codigo"])
+            print("DNI:", expediente["dni"])
             print("Remitente:", expediente["remitente"])
+            print("Sede:", expediente["sede"])
             print("Asunto:", expediente["asunto"])
             print("Fecha:", expediente["fecha"])
 
@@ -575,9 +614,32 @@ def buscar_por_fecha(expedientes):
     if not encontrados:
         print("\n❌ No se encontraron resultados.")
 
+def buscar_por_dni(expedientes):
+
+    dni = input(
+        "\nIngrese DNI: "
+    ).strip()
+
+    for expediente in expedientes:
+
+        if expediente["dni"] == dni:
+
+            print("\n✅ Expediente encontrado")
+            print("-" * 40)
+            print("Código:", expediente["codigo"])
+            print("DNI:", expediente["dni"])
+            print("Remitente:", expediente["remitente"])
+            print("Sede:", expediente["sede"])
+            print("Estado:", expediente["estado"])
+
+            return
+
+    print("\n❌ No se encontró el expediente.")
 def mostrar_estadisticas(expedientes):
 
     print("\n===== ESTADÍSTICAS =====")
+
+    
 
     total = len(expedientes)
 
@@ -585,7 +647,24 @@ def mostrar_estadisticas(expedientes):
 
     if total == 0:
         return
+    estados = {}
 
+    for expediente in expedientes:
+
+        estado = expediente["estado"]
+
+        if estado in estados:
+            estados[estado] += 1
+        else:
+            estados[estado] = 1
+
+    print("\nExpedientes por estado:")
+
+    for estado, cantidad in estados.items():
+
+        print(
+            f"{estado}: {cantidad}"
+        )
     ordenados = sorted(
         expedientes,
         key=lambda x: datetime.strptime(
@@ -656,6 +735,57 @@ def exportar_reporte_txt(expedientes):
     print(
         "\n✅ Reporte exportado correctamente."
     )
+
+def buscar_por_sede(expedientes):
+
+    print("\n===== BÚSQUEDA POR SEDE =====")
+    print("1. Trujillo")
+    print("2. Lima")
+    print("3. Cajamarca")
+    print("4. Chimbote")
+    print("0. Volver")
+
+    opcion = input("Seleccione una sede: ")
+
+    if opcion == "0":
+        return
+
+    elif opcion == "1":
+        sede = "Trujillo"
+
+    elif opcion == "2":
+        sede = "Lima"
+
+    elif opcion == "3":
+        sede = "Cajamarca"
+
+    elif opcion == "4":
+        sede = "Chimbote"
+
+    else:
+        print("❌ Opción inválida.")
+        return
+
+    encontrados = False
+
+    for expediente in expedientes:
+
+        if expediente["sede"] == sede:
+
+            print("-" * 50)
+            print("Código    :", expediente["codigo"])
+            print("DNI       :", expediente["dni"])
+            print("Remitente :", expediente["remitente"])
+            print("Sede      :", expediente["sede"])
+            print("Asunto    :", expediente["asunto"])
+            print("Fecha     :", expediente["fecha"])
+            print("Documento :", expediente["documento"])
+            print("Estado    :", expediente["estado"])
+
+            encontrados = True
+
+    if not encontrados:
+        print("\n❌ No se encontraron expedientes.")
 # ==================================
 # MENÚ PRINCIPAL
 # ==================================

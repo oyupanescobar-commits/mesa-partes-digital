@@ -1,8 +1,10 @@
-codigo,dni,remitente,sede,asunto,fecha,documento
-EXP001,,Oscar Miguel,,Actualizacion de datos,18/10/2026,
-EXP002,,Ana Juarez,,Renovacion de permiso,19/10/2026,
-EXP999,,BITACOR,,PRUEBA,17/10/2026,
-EXP123,,Jose Miguel,,Permiso municipal,17/10/2026,
-EXP234,,Rosa Maria,,Prueba,16/10/2026,
-EXP567,,Daniel,,Prueba2,16/10/2026,
-EXP987,70111120,JORGITO,Lima,TRAMITE,16/10/2026,SOLICITUD.pdf
+codigo,dni,remitente,sede,asunto,fecha,documento,estado
+EXP001,,Oscar Miguel,,Actualizacion de datos,18/10/2026,,
+EXP002,,Ana Juarez,,Renovacion de permiso,19/10/2026,,
+EXP999,,BITACOR,,PRUEBA,17/10/2026,,
+EXP123,,Jose Miguel,,Permiso municipal,17/10/2026,,
+EXP234,,Rosa Maria,,Prueba,16/10/2026,,
+EXP567,,Daniel,,Prueba2,16/10/2026,,
+EXP987,70111120,JORGITO,Lima,TRAMITE,16/10/2026,SOLICITUD.pdf,
+EXP654,70111120,Manuel,Lima,Permiso de Construccion,16/10/2016,solicitud.pdf,Pendiente
+EXP357,70111120,Lucero,Chimbote,Licencia,15/10/2026,solicitud.pdf,pendiente
