@@ -786,6 +786,91 @@ def buscar_por_sede(expedientes):
 
     if not encontrados:
         print("\n❌ No se encontraron expedientes.")
+
+def seguimiento_tramite(expedientes):
+
+    print("\n===== SEGUIMIENTO DE TRÁMITE =====")
+
+    codigo = input(
+        "Ingrese código del expediente (0 para volver): "
+    ).strip()
+
+    if codigo == "0":
+        return
+
+    for expediente in expedientes:
+
+        if expediente["codigo"] == codigo:
+
+            print("\n✅ EXPEDIENTE ENCONTRADO")
+            print("-" * 50)
+            print("Código    :", expediente["codigo"])
+            print("DNI       :", expediente["dni"])
+            print("Remitente :", expediente["remitente"])
+            print("Sede      :", expediente["sede"])
+            print("Estado    :", expediente["estado"])
+            print("Fecha     :", expediente["fecha"])
+
+            registrar_bitacora(
+                "CONSULTA_ESTADO",
+                codigo
+            )
+
+            return
+
+    print("\n❌ No se encontró el expediente.")
+
+def seguimiento_por_dni(expedientes):
+
+    print("\n===== SEGUIMIENTO POR DNI =====")
+
+    dni = input(
+        "Ingrese DNI (0 para volver): "
+    ).strip()
+
+    if dni == "0":
+        return
+
+    encontrados = False
+
+    for expediente in expedientes:
+
+        if expediente["dni"] == dni:
+
+            print("-" * 50)
+            print("Código    :", expediente["codigo"])
+            print("Estado    :", expediente["estado"])
+            print("Asunto    :", expediente["asunto"])
+            print("Fecha     :", expediente["fecha"])
+
+            encontrados = True
+
+    if not encontrados:
+        print("\n❌ No existen expedientes para ese DNI.")
+
+def menu_seguimiento(expedientes):
+
+    while True:
+
+        print("\n===== SEGUIMIENTO =====")
+        print("1. Consultar por código")
+        print("2. Consultar por DNI")
+        print("0. Volver")
+
+        opcion = input("Seleccione una opción: ")
+
+        if opcion == "1":
+            seguimiento_tramite(expedientes)
+
+        elif opcion == "2":
+            seguimiento_por_dni(expedientes)
+
+        elif opcion == "0":
+            return
+
+        else:
+            print("❌ Opción inválida.")
+
 # ==================================
 # MENÚ PRINCIPAL
 # ==================================
@@ -807,8 +892,9 @@ def menu():
         print("5. Modificar expedientes")
         print("6. Eliminar expedientes")
         print("7. Estadisticas de expedientes")
-        print("8. Exportar reporte a texto")
-        print("9. Salir")
+        print("8. Seguimiento de trámite")
+        print("9. Exportar reporte TXT")
+        print("10. Salir")
 
         opcion = input("\nSeleccione una opción: ")
 
@@ -833,10 +919,13 @@ def menu():
         elif opcion == "7":
             mostrar_estadisticas(expedientes)
 
-        elif opcion == "8" :
+        elif opcion == "8":
+            menu_seguimiento(expedientes)
+
+        elif opcion == "9" :
             exportar_reporte_txt(expedientes)
 
-        elif opcion == "9":
+        elif opcion == "10":
             guardar_expedientes(expedientes)
 
             print("\nGracias por usar el sistema.")
