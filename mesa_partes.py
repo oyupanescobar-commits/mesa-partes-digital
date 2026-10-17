@@ -32,7 +32,7 @@ def guardar_expedientes(expedientes):
     try:
         with open(ARCHIVO, mode="w", newline="", encoding="utf-8") as archivo:
 
-            campos = ["codigo", "remitente", "asunto", "fecha"]
+            campos = ["codigo", "dni", "remitente","sede","asunto", "fecha", "documento"]
 
             escritor = csv.DictWriter(
                 archivo,
@@ -126,7 +126,22 @@ def validar_fecha(fecha):
     except ValueError:
         print("Error: fecha inválida. Use DD/MM/AAAA.")
         return False
+    
+def validar_dni(dni):
 
+    if dni == "":
+        print("❌ El DNI es obligatorio.")
+        return False
+
+    if not dni.isdigit():
+        print("❌ El DNI solo debe contener números.")
+        return False
+
+    if len(dni) != 8:
+        print("❌ El DNI debe tener exactamente 8 dígitos.")
+        return False
+
+    return True
 
 # ==================================
 # REGISTRAR EXPEDIENTE
@@ -138,14 +153,58 @@ def registrar_expediente(expedientes):
 
     while True:
         codigo = input(
-               "Ingrese código (0 para volver): "
+            "Ingrese código (0 para volver): "
         ).strip()
-       
+
         if codigo == "0":
-               return
+            return
 
         if validar_codigo(codigo, expedientes):
             break
+
+    while True:
+
+        dni = input(
+            "DNI (8 dígitos): "
+        ).strip()
+
+        if validar_dni(dni):
+            break
+
+    while True:
+
+        print("\n===== SEDE =====")
+        print("1. Trujillo")
+        print("2. Lima")
+        print("3. Cajamarca")
+        print("4. Chimbote")
+        print("0. Volver")
+
+        opcion_sede = input(
+            "Seleccione una sede: "
+        )
+
+        if opcion_sede == "0":
+            return
+
+        elif opcion_sede == "1":
+            sede = "Trujillo"
+            break
+
+        elif opcion_sede == "2":
+            sede = "Lima"
+            break
+
+        elif opcion_sede == "3":
+            sede = "Cajamarca"
+            break
+
+        elif opcion_sede == "4":
+            sede = "Chimbote"
+            break
+
+        else:
+            print("❌ Opción inválida.")
 
     while True:
         remitente = input("Remitente: ").strip()
@@ -160,27 +219,51 @@ def registrar_expediente(expedientes):
             break
 
     while True:
-        fecha = input("Fecha (DD/MM/AAAA): ").strip()
+        fecha = input(
+            "Fecha (DD/MM/AAAA): "
+        ).strip()
 
         if validar_fecha(fecha):
             break
 
+    while True:
+
+        documento = input(
+            "Nombre del documento: "
+        ).strip()
+
+        if documento == "":
+            print("❌ Debe ingresar un documento.")
+            continue
+
+        break
+
     expediente = {
         "codigo": codigo,
+        "dni": dni,
         "remitente": remitente,
+        "sede": sede,
         "asunto": asunto,
-        "fecha": fecha
+        "fecha": fecha,
+        "documento": documento
     }
 
     expedientes.append(expediente)
 
     if guardar_expedientes(expedientes):
+
         registrar_bitacora(
             "REGISTRO",
             codigo
         )
-        print("\n✅ Expediente registrado correctamente.")
 
+        registrar_bitacora(
+            "DOCUMENTO_ADJUNTO",
+            documento
+        )
+
+        print("\n✅ Expediente registrado correctamente.") 
+           
 # ==================================
 # BUSCAR EXPEDIENTE
 # ==================================
@@ -280,9 +363,12 @@ def mostrar_reporte(expedientes):
 
         print("-" * 50)
         print("Código    :", expediente["codigo"])
+        print("DNI       :", expediente["dni"])
         print("Remitente :", expediente["remitente"])
+        print("Sede      :", expediente["sede"])
         print("Asunto    :", expediente["asunto"])
         print("Fecha     :", expediente["fecha"])
+        print("Documento :", expediente["documento"])
 
     print("-" * 50)
     print(f"Total de expedientes: {len(expedientes)}")
@@ -401,7 +487,9 @@ def buscar_por_codigo(expedientes):
             print("\n✅ Expediente encontrado")
             print("-" * 40)
             print("Código:", expediente["codigo"])
+            print("DNI:", expediente["dni"])
             print("Remitente:", expediente["remitente"])
+            print("Sede:", expediente["sede"])
             print("Asunto:", expediente["asunto"])
             print("Fecha:", expediente["fecha"])
 
@@ -617,7 +705,7 @@ def menu():
 
         elif opcion == "8" :
             exportar_reporte_txt(expedientes)
-            
+
         elif opcion == "9":
             guardar_expedientes(expedientes)
 
