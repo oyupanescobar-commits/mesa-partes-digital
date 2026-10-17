@@ -248,7 +248,81 @@ def mostrar_reporte(expedientes):
     print("-" * 50)
     print(f"Total de expedientes: {len(expedientes)}")
 
+def modificar_expediente(expedientes):
 
+    print("\n===== MODIFICAR EXPEDIENTE =====")
+
+    codigo = input("Ingrese código del expediente: ").strip()
+
+    for expediente in expedientes:
+
+        if expediente["codigo"] == codigo:
+
+            print("\nExpediente encontrado")
+
+            nuevo_remitente = input(
+                f"Nuevo remitente [{expediente['remitente']}]: "
+            ).strip()
+
+            nuevo_asunto = input(
+                f"Nuevo asunto [{expediente['asunto']}]: "
+            ).strip()
+
+            nueva_fecha = input(
+                f"Nueva fecha [{expediente['fecha']}]: "
+            ).strip()
+
+            if nuevo_remitente:
+                expediente["remitente"] = nuevo_remitente
+
+            if nuevo_asunto:
+                expediente["asunto"] = nuevo_asunto
+
+            if nueva_fecha:
+                if validar_fecha(nueva_fecha):
+                    expediente["fecha"] = nueva_fecha
+
+            guardar_expedientes(expedientes)
+
+            print("\n✅ Expediente modificado correctamente.")
+            return
+
+    print("\n❌ Expediente no encontrado.")
+
+def eliminar_expediente(expedientes):
+
+    print("\n===== ELIMINAR EXPEDIENTE =====")
+
+    codigo = input("Ingrese código del expediente: ").strip()
+
+    for expediente in expedientes:
+
+        if expediente["codigo"] == codigo:
+
+            print("\nExpediente encontrado")
+            print(f"Código: {expediente['codigo']}")
+            print(f"Remitente: {expediente['remitente']}")
+            print(f"Asunto: {expediente['asunto']}")
+
+            confirmar = input(
+                "\n¿Desea eliminarlo? (S/N): "
+            ).upper()
+
+            if confirmar == "S":
+
+                expedientes.remove(expediente)
+
+                guardar_expedientes(expedientes)
+
+                print("\n✅ Expediente eliminado correctamente.")
+
+            else:
+
+                print("\nOperación cancelada.")
+
+            return
+
+    print("\n❌ Expediente no encontrado.")
 # ==================================
 # MENÚ PRINCIPAL
 # ==================================
@@ -267,7 +341,9 @@ def menu():
         print("2. Buscar expediente")
         print("3. Ordenar expedientes")
         print("4. Reporte de expedientes")
-        print("5. Salir")
+        print("5. Modificar expedientes")
+        print("6. Eliminar expedientes")
+        print("7. Salir")
 
         opcion = input("\nSeleccione una opción: ")
 
@@ -284,15 +360,17 @@ def menu():
             mostrar_reporte(expedientes)
 
         elif opcion == "5":
+            modificar_expediente(expedientes)
+
+        elif opcion == "6":
+            eliminar_expediente(expedientes)
+
+        elif opcion == "7":
 
             guardar_expedientes(expedientes)
 
             print("\nGracias por usar el sistema.")
             break
-
-        else:
-            print("\nOpción inválida.")
-
 
 # ==================================
 # PROGRAMA PRINCIPAL
