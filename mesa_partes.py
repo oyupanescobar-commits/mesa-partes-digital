@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 
 ARCHIVO = "expedientes.csv"
+ARCHIVO_BITACORA = "bitacora.txt"
 
 
 # ==================================
@@ -46,7 +47,26 @@ def guardar_expedientes(expedientes):
     except Exception as e:
         print(f"\nError al guardar archivo: {e}")
         return False
+    
+def registrar_bitacora(accion, codigo):
 
+    print(">>> BITACORA EJECUTADA <<<")
+
+    with open(
+        ARCHIVO_BITACORA,
+        "a",
+        encoding="utf-8"
+    ) as archivo:
+
+        fecha_hora = datetime.now()
+
+        archivo.write(
+            f"{fecha_hora} - "
+            f"{accion} - "
+            f"{codigo}\n"
+        )
+        archivo.write(texto)
+        print(texto)
 
 # ==================================
 # VALIDACIONES
@@ -158,8 +178,11 @@ def registrar_expediente(expedientes):
     expedientes.append(expediente)
 
     if guardar_expedientes(expedientes):
+        registrar_bitacora(
+            "REGISTRO",
+            codigo
+        )
         print("\n✅ Expediente registrado correctamente.")
-
 
 # ==================================
 # BUSCAR EXPEDIENTE
@@ -307,9 +330,15 @@ def modificar_expediente(expedientes):
                     expediente["fecha"] = nueva_fecha
 
             guardar_expedientes(expedientes)
+            registrar_bitacora(
+                            "MODIFICACION",
+                            codigo
+                        )
 
             print("\n✅ Expediente modificado correctamente.")
             return
+        
+        
 
     print("\n❌ Expediente no encontrado.")
 
@@ -343,6 +372,11 @@ def eliminar_expediente(expedientes):
 
                 guardar_expedientes(expedientes)
 
+                registrar_bitacora(
+                            "ELIMINACION",
+                            codigo
+                        )
+
                 print("\n✅ Expediente eliminado correctamente.")
 
             else:
@@ -350,6 +384,7 @@ def eliminar_expediente(expedientes):
                 print("\nOperación cancelada.")
 
             return
+        
 
     print("\n❌ Expediente no encontrado.")
 
@@ -455,6 +490,39 @@ def buscar_por_fecha(expedientes):
     if not encontrados:
         print("\n❌ No se encontraron resultados.")
 
+def mostrar_estadisticas(expedientes):
+
+    print("\n===== ESTADÍSTICAS =====")
+
+    total = len(expedientes)
+
+    print(f"\nTotal de expedientes: {total}")
+
+    if total == 0:
+        return
+
+    ordenados = sorted(
+        expedientes,
+        key=lambda x: datetime.strptime(
+            x["fecha"],
+            "%d/%m/%Y"
+        )
+    )
+
+    mas_antiguo = ordenados[0]
+    mas_reciente = ordenados[-1]
+
+    print("\nExpediente más antiguo:")
+    print(
+        f"{mas_antiguo['codigo']} - "
+        f"{mas_antiguo['fecha']}"
+    )
+
+    print("\nExpediente más reciente:")
+    print(
+        f"{mas_reciente['codigo']} - "
+        f"{mas_reciente['fecha']}"
+    )
 
 # ==================================
 # MENÚ PRINCIPAL
@@ -476,7 +544,8 @@ def menu():
         print("4. Reporte de expedientes")
         print("5. Modificar expedientes")
         print("6. Eliminar expedientes")
-        print("7. Salir")
+        print("7. Estadisticas de expedientes")
+        print("8. Salir")
 
         opcion = input("\nSeleccione una opción: ")
 
@@ -499,7 +568,9 @@ def menu():
             eliminar_expediente(expedientes)
 
         elif opcion == "7":
+            mostrar_estadisticas(expedientes)
 
+        elif opcion == "8":
             guardar_expedientes(expedientes)
 
             print("\nGracias por usar el sistema.")
