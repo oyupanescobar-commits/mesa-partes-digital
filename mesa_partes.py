@@ -120,7 +120,12 @@ def registrar_expediente(expedientes):
     print("\n===== REGISTRO DE EXPEDIENTE =====")
 
     while True:
-        codigo = input("Código: ").strip()
+        codigo = input(
+               "Ingrese código (0 para volver): "
+        ).strip()
+       
+        if codigo == "0":
+               return
 
         if validar_codigo(codigo, expedientes):
             break
@@ -164,7 +169,12 @@ def buscar_expediente(expedientes):
 
     print("\n===== BÚSQUEDA =====")
 
-    codigo = input("Ingrese código: ").strip()
+    codigo = input(
+        "Ingrese código (0 para volver): "
+    ).strip()
+
+    if codigo == "0":
+        return
 
     for expediente in expedientes:
 
@@ -192,6 +202,7 @@ def ordenar_expedientes(expedientes):
     print("1. Por código")
     print("2. Por remitente")
     print("3. Por fecha")
+    print("4. Volver")
 
     opcion = input("Seleccione: ")
 
@@ -215,6 +226,9 @@ def ordenar_expedientes(expedientes):
                 "%d/%m/%Y"
             )
         )
+    elif opcion == "4":
+            print("\nVolviendo al menú principal...")
+            return
 
     else:
         print("Opción inválida.")
@@ -252,8 +266,13 @@ def modificar_expediente(expedientes):
 
     print("\n===== MODIFICAR EXPEDIENTE =====")
 
-    codigo = input("Ingrese código del expediente: ").strip()
-
+    codigo = input(
+            "Ingrese código (0 para volver): "
+    ).strip()
+    
+    if codigo == "0":
+            return
+    
     for expediente in expedientes:
 
         if expediente["codigo"] == codigo:
@@ -293,7 +312,12 @@ def eliminar_expediente(expedientes):
 
     print("\n===== ELIMINAR EXPEDIENTE =====")
 
-    codigo = input("Ingrese código del expediente: ").strip()
+    codigo = input(
+            "Ingrese código (0 para volver): "
+    ).strip()
+    
+    if codigo == "0":
+            return
 
     for expediente in expedientes:
 
