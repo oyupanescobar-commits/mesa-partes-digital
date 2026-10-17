@@ -2,6 +2,41 @@ import csv
 import os
 from datetime import datetime
 
+class Expediente:
+
+    def __init__(
+        self,
+        codigo,
+        dni,
+        remitente,
+        sede,
+        asunto,
+        fecha,
+        documento,
+        estado="Pendiente"
+    ):
+
+        self.codigo = codigo
+        self.dni = dni
+        self.remitente = remitente
+        self.sede = sede
+        self.asunto = asunto
+        self.fecha = fecha
+        self.documento = documento
+        self.estado = estado
+    def to_dict(self):
+
+        return {
+            "codigo": self.codigo,
+            "dni": self.dni,
+            "remitente": self.remitente,
+            "sede": self.sede,
+            "asunto": self.asunto,
+            "fecha": self.fecha,
+            "documento": self.documento,
+            "estado": self.estado
+        }
+
 ARCHIVO = "expedientes.csv"
 ARCHIVO_BITACORA = "bitacora.txt"
 
@@ -238,18 +273,19 @@ def registrar_expediente(expedientes):
 
         break
 
-    expediente = {
-        "codigo": codigo,
-        "dni": dni,
-        "remitente": remitente,
-        "sede": sede,
-        "asunto": asunto,
-        "fecha": fecha,
-        "documento": documento,
-        "estado": "pendiente",
-    }
+    expediente = Expediente(
+        codigo,
+        dni,
+        remitente,
+        sede,
+        asunto,
+        fecha,
+        documento
+    )
 
-    expedientes.append(expediente)
+    expedientes.append(
+        expediente.to_dict()
+    )
 
     if guardar_expedientes(expedientes):
 
