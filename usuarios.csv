@@ -1,0 +1,2 @@
+usuario,sal,hash_password,rol,activo
+ADMIN123,f31fb44fd340b0fa04d760d5fca2f002,0cf6e496fba68c9ee1eb27d29765ec4a53006fc5c68084168433d11d3b3f302a,administrador,1
