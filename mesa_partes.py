@@ -1,5 +1,11 @@
 import csv
 import os
+import hashlib
+import hmac
+import secrets
+import random
+import string
+from getpass import getpass
 from datetime import datetime
 
 class Expediente:
@@ -36,6 +42,20 @@ class Expediente:
             "documento": self.documento,
             "estado": self.estado
         }
+
+    @classmethod
+    def from_dict(cls, datos):
+
+        return cls(
+            datos["codigo"],
+            datos["dni"],
+            datos["remitente"],
+            datos["sede"],
+            datos["asunto"],
+            datos["fecha"],
+            datos["documento"],
+            datos["estado"]
+        )
 class MesaPartes:
 
     def __init__(self):
@@ -45,15 +65,40 @@ class MesaPartes:
     def total_expedientes(self):
 
         return len(self.expedientes)
+
+    def menu(self):
+        """Inicia el menú interno autenticado usando la lista de esta instancia."""
+        menu(self.expedientes)
     
 ARCHIVO = "expedientes.csv"
 ARCHIVO_BITACORA = "bitacora.txt"
+ARCHIVO_USUARIOS = "usuarios.csv"
+ROLES_VALIDOS = {"administrador", "operador"}
+ESTADOS_VALIDOS = {"Pendiente", "En Proceso", "Atendido", "Observado", "Archivado"}
 
 
 # ==================================
 # FUNCIONES DE ARCHIVO
 # ==================================
+def generar_codigo_expediente(expedientes):
 
+    while True:
+
+        anio = datetime.now().year
+
+        numero = "".join(
+            random.choices("0123456789", k=6)
+        )
+
+        codigo = f"EXP-{anio}-{numero}"
+
+        existe = any(
+            expediente["codigo"] == codigo
+            for expediente in expedientes
+        )
+
+        if not existe:
+            return codigo
 def cargar_expedientes():
     expedientes = []
 
@@ -63,7 +108,9 @@ def cargar_expedientes():
                 lector = csv.DictReader(archivo)
 
                 for fila in lector:
-                    expedientes.append(fila)
+                    expediente = Expediente.from_dict(fila)
+
+                    expedientes.append(expediente)
 
         except Exception as e:
             print(f"\nError al leer archivo: {e}")
@@ -115,6 +162,8 @@ def registrar_bitacora(accion, codigo):
 
 def validar_codigo(codigo, expedientes):
 
+    codigo = codigo.strip()
+
     if not codigo:
         print("Error: el código es obligatorio.")
         return False
@@ -128,7 +177,7 @@ def validar_codigo(codigo, expedientes):
         return False
 
     for expediente in expedientes:
-        if expediente["codigo"] == codigo:
+        if expediente.get("codigo", "").strip().casefold() == codigo.casefold():
             print("Error: el código ya existe.")
             return False
 
@@ -190,22 +239,76 @@ def validar_dni(dni):
 # ==================================
 # REGISTRAR EXPEDIENTE
 # ==================================
-
-def registrar_expediente(self):
-
-    print("\n===== REGISTRO DE EXPEDIENTE =====")
+def menu_inicial():
 
     while True:
-        codigo = input(
-            "Ingrese código (0 para volver): "
-        ).strip()
 
-        if codigo == "0":
-            return
+        print("\n" + "=" * 45)
+        print("       MESA DE PARTES DIGITAL")
+        print("=" * 45)
+        print("1. Administrador")
+        print("2. Usuario")
+        print("0. Salir")
+        print("=" * 45)
 
-        if validar_codigo(codigo, self.expedientes):
+        opcion = input("Seleccione una opción: ").strip()
+
+        if opcion == "1":
+
+            usuario = iniciar_sesion()
+
+            if usuario and usuario["rol"] == "administrador":
+                sistema = MesaPartes()
+                menu(sistema.expedientes, usuario)
+
+        elif opcion == "2":
+
+            sistema = MesaPartes()
+            menu_usuario(sistema.expedientes)
+
+        elif opcion == "0":
+
+            print("Gracias por utilizar el sistema.")
             break
 
+        else:
+
+            print("❌ Opción inválida.")
+
+def menu_usuario(expedientes):
+
+    while True:
+
+        print("\n" + "=" * 40)
+        print("      PORTAL DEL USUARIO")
+        print("=" * 40)
+        print("1. Registrar expediente")
+        print("2. Seguimiento por código")
+        print("3. Seguimiento por DNI")
+        print("0. Salir")
+
+        opcion = input("\nSeleccione una opción: ")
+
+        if opcion == "1":
+            registrar_expediente(expedientes)
+
+        elif opcion == "2":
+            seguimiento_tramite(expedientes)
+
+        elif opcion == "3":
+            seguimiento_por_dni(expedientes)
+
+        elif opcion == "0":
+            break
+
+        else:
+            print("❌ Opción inválida.")
+
+def registrar_expediente(expedientes):
+
+    print("\n===== REGISTRO DE EXPEDIENTE =====")
+    codigo = generar_codigo_expediente(expedientes)
+    print(f"\n📄 Código generado: {codigo}")
     while True:
 
         dni = input(
@@ -292,11 +395,11 @@ def registrar_expediente(self):
         documento
     )
 
-    self.expedientes.append(
+    expedientes.append(
         expediente.to_dict()
     )
 
-    if guardar_expedientes(self.expedientes):
+    if guardar_expedientes(expedientes):
 
         registrar_bitacora(
             "REGISTRO",
@@ -308,13 +411,16 @@ def registrar_expediente(self):
             documento
         )
 
-        print("\n✅ Expediente registrado correctamente.") 
+        print("\n✅ Expediente registrado correctamente.")
+    else:
+        expedientes.pop()
+        print("\n❌ No se pudo guardar el expediente; no quedó registrado en memoria.") 
            
 # ==================================
 # BUSCAR EXPEDIENTE
 # ==================================
 
-def buscar_expediente(self):
+def buscar_expediente(expedientes):
 
     while True:
 
@@ -330,22 +436,22 @@ def buscar_expediente(self):
         opcion = input("Seleccione una opción: ")
 
         if opcion == "1":
-            buscar_por_codigo(self.expedientes)
+            buscar_por_codigo(expedientes)
 
         elif opcion == "2":
-            buscar_por_dni(self.expedientes)
+            buscar_por_dni(expedientes)
 
         elif opcion == "3":
-            buscar_por_remitente(self.expedientes)
+            buscar_por_remitente(expedientes)
 
         elif opcion == "4":
-            buscar_por_sede(self.expedientes)
+            buscar_por_sede(expedientes)
 
         elif opcion == "5":
-            buscar_por_asunto(self.expedientes)
+            buscar_por_asunto(expedientes)
 
         elif opcion == "6":
-            buscar_por_fecha(self.expedientes)
+            buscar_por_fecha(expedientes)
 
         elif opcion == "0":
             return
@@ -358,7 +464,7 @@ def buscar_expediente(self):
 # ORDENAR EXPEDIENTES
 # ==================================
 
-def ordenar_expedientes(self):
+def ordenar_expedientes(expedientes):
 
     print("\n===== ORDENAMIENTO =====")
     print("1. Por código")
@@ -370,19 +476,19 @@ def ordenar_expedientes(self):
 
     if opcion == "1":
 
-        self.expedientes.sort(
+        expedientes.sort(
             key=lambda x: x["codigo"]
         )
 
     elif opcion == "2":
 
-        self.expedientes.sort(
+        expedientes.sort(
             key=lambda x: x["remitente"].lower()
         )
 
     elif opcion == "3":
 
-        self.expedientes.sort(
+        expedientes.sort(
             key=lambda x: datetime.strptime(
                 x["fecha"],
                 "%d/%m/%Y"
@@ -396,7 +502,7 @@ def ordenar_expedientes(self):
         print("Opción inválida.")
         return
 
-    guardar_expedientes(self.expedientes)
+    guardar_expedientes(expedientes)
 
     print("\n✅ Expedientes ordenados correctamente.")
 
@@ -405,15 +511,15 @@ def ordenar_expedientes(self):
 # REPORTE
 # ==================================
 
-def mostrar_reporte(self):
+def mostrar_reporte(expedientes):
 
     print("\n===== REPORTE DE EXPEDIENTES =====")
 
-    if len(self.expedientes) == 0:
+    if len(expedientes) == 0:
         print("No existen expedientes registrados.")
         return
 
-    for expediente in self.expedientes:
+    for expediente in expedientes:
 
         print("-" * 50)
         print("Código    :", expediente["codigo"])
@@ -426,82 +532,62 @@ def mostrar_reporte(self):
         print("Estado    :", expediente["estado"])
 
     print("-" * 50)
-    print(f"Total de expedientes: {len(self.expedientes)}")
+    print(f"Total de expedientes: {len(expedientes)}")
 
-def modificar_expediente(self):
+def modificar_expediente(expedientes):
 
     print("\n===== MODIFICAR EXPEDIENTE =====")
 
-    codigo = input(
-            "Ingrese código (0 para volver): "
-    ).strip()
-    
+    codigo = input("Ingrese código (0 para volver): ").strip()
     if codigo == "0":
-            return
-    
-    for expediente in self.expedientes:
+        return
 
-        if expediente["codigo"] == codigo:
+    expediente = next(
+        (item for item in expedientes if item["codigo"] == codigo),
+        None
+    )
 
-            print("\nExpediente encontrado")
+    if expediente is None:
+        print("\n❌ Expediente no encontrado.")
+        return
 
-            nuevo_remitente = input(
-                f"Nuevo remitente [{expediente['remitente']}]: "
-            ).strip()
+    print("\nExpediente encontrado")
+    nuevo_remitente = input(
+        f"Nuevo remitente [{expediente['remitente']}] (Enter para mantener): "
+    ).strip()
+    nuevo_asunto = input(
+        f"Nuevo asunto [{expediente['asunto']}] (Enter para mantener): "
+    ).strip()
+    nueva_fecha = input(
+        f"Nueva fecha [{expediente['fecha']}] (Enter para mantener): "
+    ).strip()
 
-            nuevo_asunto = input(
-                f"Nuevo asunto [{expediente['asunto']}]: "
-            ).strip()
+    if nuevo_remitente and not validar_remitente(nuevo_remitente):
+        print("No se guardaron los cambios.")
+        return
+    if nuevo_asunto and not validar_asunto(nuevo_asunto):
+        print("No se guardaron los cambios.")
+        return
+    if nueva_fecha and not validar_fecha(nueva_fecha):
+        print("No se guardaron los cambios.")
+        return
 
-            nueva_fecha = input(
-                f"Nueva fecha [{expediente['fecha']}]: "
-            ).strip()
+    # El cambio de estado es una operación separada y exclusiva del administrador.
+    original = expediente.copy()
+    if nuevo_remitente:
+        expediente["remitente"] = nuevo_remitente
+    if nuevo_asunto:
+        expediente["asunto"] = nuevo_asunto
+    if nueva_fecha:
+        expediente["fecha"] = nueva_fecha
 
-            if nuevo_remitente:
-                expediente["remitente"] = nuevo_remitente
+    if guardar_expedientes(expedientes):
+        registrar_bitacora("MODIFICACION", codigo)
+        print("\n✅ Expediente modificado correctamente.")
+    else:
+        expediente.update(original)
+        print("\n❌ No se pudieron guardar los cambios; se restauraron los datos en memoria.")
 
-            if nuevo_asunto:
-                expediente["asunto"] = nuevo_asunto
-
-            if nueva_fecha:
-                if validar_fecha(nueva_fecha):
-                    expediente["fecha"] = nueva_fecha
-
-            guardar_expedientes(self.expedientes)
-            registrar_bitacora(
-                            "MODIFICACION",
-                            codigo
-                        )
-
-            print("\n✅ Expediente modificado correctamente.")
-            return
-        
-        print("\n===== NUEVO ESTADO =====")
-        print("1. Pendiente")
-        print("2. En Proceso")
-        print("3. Atendido")
-        print("4. Observado")
-        print("5. Archivado")
-
-    opcion_estado = input(
-    "Seleccione un estado: "
-)
-    if opcion_estado == "1":
-        expediente["estado"] = "Pendiente"
-
-    elif opcion_estado == "2":
-        expediente["estado"] = "En Proceso"
-
-    elif opcion_estado == "3":
-        expediente["estado"] = "Atendido"
-
-    elif opcion_estado == "4":
-        expediente["estado"] = "Observado"
-
-    elif opcion_estado == "5":
-        expediente["estado"] = "Archivado"
-
-    print("\n❌ Expediente no encontrado.")
 
 def eliminar_expediente(expedientes):
 
@@ -529,16 +615,15 @@ def eliminar_expediente(expedientes):
 
             if confirmar == "S":
 
-                expedientes.remove(expediente)
+                indice = expedientes.index(expediente)
+                expedientes.pop(indice)
 
-                guardar_expedientes(expedientes)
-
-                registrar_bitacora(
-                            "ELIMINACION",
-                            codigo
-                        )
-
-                print("\n✅ Expediente eliminado correctamente.")
+                if guardar_expedientes(expedientes):
+                    registrar_bitacora("ELIMINACION", codigo)
+                    print("\n✅ Expediente eliminado correctamente.")
+                else:
+                    expedientes.insert(indice, expediente)
+                    print("\n❌ No se pudo guardar la eliminación; el expediente se conservó.")
 
             else:
 
@@ -917,69 +1002,229 @@ def menu_seguimiento(expedientes):
             print("❌ Opción inválida.")
 
 # ==================================
+# USUARIOS Y PERMISOS INTERNOS
+# ==================================
+
+def _hash_password(password, salt=None):
+    """Devuelve sal y hash PBKDF2; nunca guarda contraseñas en texto claro."""
+    salt = salt or secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), bytes.fromhex(salt), 200_000)
+    return salt, digest.hex()
+
+
+def cargar_usuarios():
+    usuarios = []
+    if os.path.exists(ARCHIVO_USUARIOS):
+        try:
+            with open(ARCHIVO_USUARIOS, "r", newline="", encoding="utf-8") as archivo:
+                for fila in csv.DictReader(archivo):
+                    if fila.get("rol") in ROLES_VALIDOS:
+                        usuarios.append(fila)
+        except (OSError, csv.Error) as error:
+            print(f"Error al leer usuarios: {error}")
+    return usuarios
+
+
+def guardar_usuarios(usuarios):
+    try:
+        temporal = ARCHIVO_USUARIOS + ".tmp"
+        with open(temporal, "w", newline="", encoding="utf-8") as archivo:
+            campos = ["usuario", "sal", "hash_password", "rol", "activo"]
+            escritor = csv.DictWriter(archivo, fieldnames=campos)
+            escritor.writeheader()
+            escritor.writerows(usuarios)
+        os.replace(temporal, ARCHIVO_USUARIOS)
+        return True
+    except OSError as error:
+        print(f"Error al guardar usuarios: {error}")
+        return False
+
+
+def crear_usuario(usuarios, nombre, password, rol):
+    nombre = nombre.strip()
+    if not nombre or any(u["usuario"].casefold() == nombre.casefold() for u in usuarios):
+        print("El nombre de usuario está vacío o ya existe.")
+        return False
+    if len(password) < 12:
+        print("La contraseña debe tener al menos 12 caracteres.")
+        return False
+    if rol not in ROLES_VALIDOS:
+        print("Rol inválido.")
+        return False
+    sal, hash_password = _hash_password(password)
+    usuarios.append({"usuario": nombre, "sal": sal, "hash_password": hash_password,
+                     "rol": rol, "activo": "1"})
+    if guardar_usuarios(usuarios):
+        registrar_bitacora("CREACION_USUARIO", nombre)
+        return True
+    usuarios.pop()
+    return False
+
+
+def preparar_administrador_inicial():
+    usuarios = cargar_usuarios()
+    if usuarios:
+        return usuarios
+    print("\nPrimera ejecución: cree la cuenta del administrador principal.")
+    while True:
+        nombre = input("Usuario administrador: ").strip()
+        clave = getpass("Contraseña (mínimo 12 caracteres): ")
+        confirmar = getpass("Repita la contraseña: ")
+        if clave != confirmar:
+            print("Las contraseñas no coinciden.")
+            continue
+        if crear_usuario(usuarios, nombre, clave, "administrador"):
+            print("Cuenta de administrador creada.")
+            return cargar_usuarios()
+        print("No se pudo crear la cuenta. Inténtelo nuevamente.")
+
+
+def iniciar_sesion():
+    usuarios = preparar_administrador_inicial()
+    while True:
+        print("\n===== INICIO DE SESIÓN INTERNO =====")
+        nombre = input("Usuario (0 para salir): ").strip()
+        if nombre == "0":
+            return None
+        clave = getpass("Contraseña: ")
+        for usuario in usuarios:
+            if usuario["usuario"].casefold() == nombre.casefold() and usuario.get("activo") == "1":
+                _, hash_intento = _hash_password(clave, usuario["sal"])
+                if hmac.compare_digest(hash_intento, usuario["hash_password"]):
+                    registrar_bitacora("INICIO_SESION", usuario["usuario"])
+                    return {"usuario": usuario["usuario"], "rol": usuario["rol"]}
+        print("Credenciales incorrectas o cuenta inactiva.")
+
+
+def cambiar_estado_expediente(expedientes, usuario):
+    """Único punto de cambio de estado; exige rol administrador."""
+    if not usuario or usuario.get("rol") != "administrador":
+        print("Acceso denegado: solo el administrador puede cambiar estados.")
+        registrar_bitacora("CAMBIO_ESTADO_DENEGADO", usuario.get("usuario", "desconocido") if usuario else "sin_sesion")
+        return
+
+    codigo = input("Código del expediente (0 para volver): ").strip()
+    if codigo == "0":
+        return
+    expediente = next((item for item in expedientes if item.get("codigo", "").casefold() == codigo.casefold()), None)
+    if expediente is None:
+        print("Expediente no encontrado.")
+        return
+
+    print(f"Estado actual: {expediente.get('estado', 'Pendiente')}")
+    opciones = {"1": "Pendiente", "2": "En Proceso", "3": "Atendido", "4": "Observado", "5": "Archivado"}
+    for clave, estado in opciones.items():
+        print(f"{clave}. {estado}")
+    print("0. Cancelar")
+    opcion = input("Nuevo estado: ").strip()
+    if opcion == "0":
+        print("Operación cancelada.")
+        return
+    if opcion not in opciones:
+        print("Opción de estado inválida.")
+        return
+    anterior = expediente.get("estado", "Pendiente")
+    nuevo = opciones[opcion]
+    if anterior == nuevo:
+        print("El expediente ya tiene ese estado.")
+        return
+    expediente["estado"] = nuevo
+    if guardar_expedientes(expedientes):
+        try:
+            registrar_bitacora(f"CAMBIO_ESTADO:{anterior}->{nuevo};USUARIO:{usuario['usuario']}", codigo)
+        except OSError as error:
+            print(f"Advertencia: el estado se guardó, pero falló la bitácora: {error}")
+        print("Estado actualizado correctamente.")
+    else:
+        expediente["estado"] = anterior
+        print("No se pudo guardar el estado; se restauró el valor anterior.")
+
+
+def administrar_usuarios(usuario):
+    if not usuario or usuario.get("rol") != "administrador":
+        print("Acceso denegado: solo el administrador puede administrar cuentas.")
+        return
+    usuarios = cargar_usuarios()
+    nombre = input("Nuevo nombre de usuario (0 para volver): ").strip()
+    if nombre == "0":
+        return
+    clave = getpass("Contraseña inicial (mínimo 12 caracteres): ")
+    rol = input("Rol (administrador/operador): ").strip().lower()
+    if crear_usuario(usuarios, nombre, clave, rol):
+        print("Usuario creado correctamente.")
+    else:
+        print("No se pudo crear el usuario.")
+
+
+# ==================================
 # MENÚ PRINCIPAL
 # ==================================
 
-def menu():
-
-    expedientes = cargar_expedientes()
+def menu(expedientes=None, usuario=None):
+    """Menú interno. Las funciones administrativas verifican el rol también."""
+    if expedientes is None:
+        expedientes = cargar_expedientes()
+    if usuario is None:
+        usuario = iniciar_sesion()
+    if usuario is None:
+        print("Sesión no iniciada.")
+        return
 
     while True:
-
-        print("\n")
-        print("=" * 40)
+        print("\n" + "=" * 40)
         print("      MESA DE PARTES DIGITAL")
+        print(f"Usuario: {usuario['usuario']} | Rol: {usuario['rol']}")
         print("=" * 40)
         print("1. Registrar expediente")
         print("2. Buscar expediente")
         print("3. Ordenar expedientes")
         print("4. Reporte de expedientes")
-        print("5. Modificar expedientes")
-        print("6. Eliminar expedientes")
-        print("7. Estadisticas de expedientes")
-        print("8. Seguimiento de trámite")
+        print("5. Modificar datos del expediente (sin cambiar estado)")
+        print("6. Eliminar expediente")
+        print("7. Estadísticas de expedientes")
+        print("8. Seguimiento interno")
         print("9. Exportar reporte TXT")
-        print("10. Salir")
-
-        opcion = input("\nSeleccione una opción: ")
+        if usuario["rol"] == "administrador":
+            print("11. Cambiar estado de expediente (administrador)")
+            print("12. Crear cuenta interna")
+        print("10. Cerrar sesión")
+        opcion = input("\nSeleccione una opción: ").strip()
 
         if opcion == "1":
             registrar_expediente(expedientes)
-
         elif opcion == "2":
             buscar_expediente(expedientes)
-
         elif opcion == "3":
             ordenar_expedientes(expedientes)
-
         elif opcion == "4":
             mostrar_reporte(expedientes)
-
         elif opcion == "5":
             modificar_expediente(expedientes)
-
         elif opcion == "6":
             eliminar_expediente(expedientes)
-
         elif opcion == "7":
             mostrar_estadisticas(expedientes)
-
         elif opcion == "8":
             menu_seguimiento(expedientes)
-
-        elif opcion == "9" :
+        elif opcion == "9":
             exportar_reporte_txt(expedientes)
-
+        elif opcion == "11" and usuario["rol"] == "administrador":
+            cambiar_estado_expediente(expedientes, usuario)
+        elif opcion == "12" and usuario["rol"] == "administrador":
+            administrar_usuarios(usuario)
         elif opcion == "10":
-            guardar_expedientes(expedientes)
-
-            print("\nGracias por usar el sistema.")
-            break
+            try:
+                registrar_bitacora("CIERRE_SESION", usuario["usuario"])
+            except OSError:
+                pass
+            print("Sesión cerrada.")
+            return
+        else:
+            print("Opción inválida o permiso insuficiente.")
 
 # ==================================
 # PROGRAMA PRINCIPAL
 # ==================================
 
 if __name__ == "__main__":
-    sistema = MesaPartes()
-    sistema.menu()
+    menu_inicial()
