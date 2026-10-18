@@ -56,6 +56,25 @@ class Expediente:
             datos["documento"],
             datos["estado"]
         )
+def __str__(self):
+
+    return (
+        f"Código: {self.codigo}\n"
+        f"DNI: {self.dni}\n"
+        f"Remitente: {self.remitente}\n"
+        f"Sede: {self.sede}\n"
+        f"Asunto: {self.asunto}\n"
+        f"Fecha: {self.fecha}\n"
+        f"Documento: {self.documento}\n"
+        f"Estado: {self.estado}"
+    )
+def cambiar_estado(self, nuevo_estado):
+
+    if nuevo_estado in ESTADOS_VALIDOS:
+        self.estado = nuevo_estado
+        return True
+
+    return False
 class MesaPartes:
 
     def __init__(self):
@@ -69,6 +88,8 @@ class MesaPartes:
     def menu(self):
         """Inicia el menú interno autenticado usando la lista de esta instancia."""
         menu(self.expedientes)
+
+
     
 ARCHIVO = "expedientes.csv"
 ARCHIVO_BITACORA = "bitacora.txt"
@@ -80,6 +101,13 @@ ESTADOS_VALIDOS = {"Pendiente", "En Proceso", "Atendido", "Observado", "Archivad
 # ==================================
 # FUNCIONES DE ARCHIVO
 # ==================================
+def resumen(self):
+
+    return (
+        f"{self.codigo} | "
+        f"{self.remitente} | "
+        f"{self.estado}"
+    )
 def generar_codigo_expediente(expedientes):
 
     while True:
@@ -93,7 +121,7 @@ def generar_codigo_expediente(expedientes):
         codigo = f"EXP-{anio}-{numero}"
 
         existe = any(
-            expediente["codigo"] == codigo
+            expediente.codigo == codigo
             for expediente in expedientes
         )
 
@@ -130,9 +158,9 @@ def guardar_expedientes(expedientes):
                 fieldnames=campos
             )
 
-            escritor.writeheader()
-            escritor.writerows(expedientes)
-
+            escritor.writerows(
+                [expediente.to_dict() for expediente in expedientes]
+            )
         return True
 
     except Exception as e:
@@ -177,7 +205,7 @@ def validar_codigo(codigo, expedientes):
         return False
 
     for expediente in expedientes:
-        if expediente.get("codigo", "").strip().casefold() == codigo.casefold():
+        if expediente.codigo.strip().casefold() == codigo.casefold():
             print("Error: el código ya existe.")
             return False
 
@@ -395,9 +423,7 @@ def registrar_expediente(expedientes):
         documento
     )
 
-    expedientes.append(
-        expediente.to_dict()
-    )
+    expedientes.append(expediente)
 
     if guardar_expedientes(expedientes):
 
@@ -522,17 +548,16 @@ def mostrar_reporte(expedientes):
     for expediente in expedientes:
 
         print("-" * 50)
-        print("Código    :", expediente["codigo"])
-        print("DNI       :", expediente["dni"])
-        print("Remitente :", expediente["remitente"])
-        print("Sede      :", expediente["sede"])
-        print("Asunto    :", expediente["asunto"])
-        print("Fecha     :", expediente["fecha"])
-        print("Documento :", expediente["documento"])
-        print("Estado    :", expediente["estado"])
-
-    print("-" * 50)
-    print(f"Total de expedientes: {len(expedientes)}")
+        print("Código    :", expediente.codigo)
+        print("DNI       :", expediente.dni)
+        print("Remitente :", expediente.remitente)
+        print("Sede      :", expediente.sede)
+        print("Asunto    :", expediente.asunto)
+        print("Fecha     :", expediente.fecha)
+        print("Documento :", expediente.documento)
+        print("Estado    :", expediente.estado)
+        print("-" * 50)
+        print(f"Total de expedientes: {len(expedientes)}")
 
 def modificar_expediente(expedientes):
 
@@ -543,7 +568,7 @@ def modificar_expediente(expedientes):
         return
 
     expediente = next(
-        (item for item in expedientes if item["codigo"] == codigo),
+        (item for item in expedientes if item.codigo == codigo),
         None
     )
 
@@ -575,11 +600,11 @@ def modificar_expediente(expedientes):
     # El cambio de estado es una operación separada y exclusiva del administrador.
     original = expediente.copy()
     if nuevo_remitente:
-        expediente["remitente"] = nuevo_remitente
+        expediente.remitente = nuevo_remitente
     if nuevo_asunto:
-        expediente["asunto"] = nuevo_asunto
+        expediente.asunto = nuevo_asunto
     if nueva_fecha:
-        expediente["fecha"] = nueva_fecha
+        expediente.fecha = nueva_fecha
 
     if guardar_expedientes(expedientes):
         registrar_bitacora("MODIFICACION", codigo)
@@ -602,12 +627,12 @@ def eliminar_expediente(expedientes):
 
     for expediente in expedientes:
 
-        if expediente["codigo"] == codigo:
+        if expediente.codigo == codigo:
 
             print("\nExpediente encontrado")
-            print(f"Código: {expediente['codigo']}")
-            print(f"Remitente: {expediente['remitente']}")
-            print(f"Asunto: {expediente['asunto']}")
+            print(f"Código: {expediente.codigo}")
+            print(f"Remitente: {expediente.remitente}")
+            print(f"Asunto: {expediente.asunto}")
 
             confirmar = input(
                 "\n¿Desea eliminarlo? (S/N): "
@@ -645,16 +670,16 @@ def buscar_por_codigo(expedientes):
 
     for expediente in expedientes:
 
-        if expediente["codigo"] == codigo:
+        if expediente.codigo == codigo:
 
             print("\n✅ Expediente encontrado")
             print("-" * 40)
-            print("Código:", expediente["codigo"])
-            print("DNI:", expediente["dni"])
-            print("Remitente:", expediente["remitente"])
-            print("Sede:", expediente["sede"])
-            print("Asunto:", expediente["asunto"])
-            print("Fecha:", expediente["fecha"])
+            print("Código:", expediente.codigo)
+            print("DNI:", expediente.dni)
+            print("Remitente:", expediente.remitente)
+            print("Sede:", expediente.sede)
+            print("Asunto:", expediente.asunto)
+            print("Fecha:", expediente.fecha)
 
             return
 
@@ -673,15 +698,15 @@ def buscar_por_remitente(expedientes):
 
     for expediente in expedientes:
 
-        if remitente in expediente["remitente"].lower():
+        if remitente in expediente.remitente.lower():
 
             print("-" * 40)
-            print("Código:", expediente["codigo"])
-            print("DNI:", expediente["dni"])
-            print("Remitente:", expediente["remitente"])
-            print("Sede:", expediente["sede"])
-            print("Asunto:", expediente["asunto"])
-            print("Fecha:", expediente["fecha"])
+            print("Código:", expediente.codigo)
+            print("DNI:", expediente.dni)
+            print("Remitente:", expediente.remitente)
+            print("Sede:", expediente.sede)
+            print("Asunto:", expediente.asunto)
+            print("Fecha:", expediente.fecha)
 
             encontrados = True
 
@@ -701,15 +726,15 @@ def buscar_por_asunto(expedientes):
 
     for expediente in expedientes:
 
-        if asunto in expediente["asunto"].lower():
+        if asunto in expediente.asunto.lower():
 
             print("-" * 40)
-            print("Código:", expediente["codigo"])
-            print("DNI:", expediente["dni"])
-            print("Remitente:", expediente["remitente"])
-            print("Sede:", expediente["sede"])
-            print("Asunto:", expediente["asunto"])
-            print("Fecha:", expediente["fecha"])
+            print("Código:", expediente.codigo)
+            print("DNI:", expediente.dni)
+            print("Remitente:", expediente.remitente)
+            print("Sede:", expediente.sede)
+            print("Asunto:", expediente.asunto)
+            print("Fecha:", expediente.fecha)
 
             encontrados = True
 
@@ -729,15 +754,15 @@ def buscar_por_fecha(expedientes):
 
     for expediente in expedientes:
 
-        if expediente["fecha"] == fecha:
+        if expediente.fecha == fecha:
 
             print("-" * 40)
-            print("Código:", expediente["codigo"])
-            print("DNI:", expediente["dni"])
-            print("Remitente:", expediente["remitente"])
-            print("Sede:", expediente["sede"])
-            print("Asunto:", expediente["asunto"])
-            print("Fecha:", expediente["fecha"])
+            print("Código:", expediente.codigo)
+            print("DNI:", expediente.dni)
+            print("Remitente:", expediente.remitente)
+            print("Sede:", expediente.sede)
+            print("Asunto:", expediente.asunto)
+            print("Fecha:", expediente.fecha)
 
             encontrados = True
 
@@ -752,15 +777,15 @@ def buscar_por_dni(expedientes):
 
     for expediente in expedientes:
 
-        if expediente["dni"] == dni:
+        if expediente.dni == dni:
 
             print("\n✅ Expediente encontrado")
             print("-" * 40)
-            print("Código:", expediente["codigo"])
-            print("DNI:", expediente["dni"])
-            print("Remitente:", expediente["remitente"])
-            print("Sede:", expediente["sede"])
-            print("Estado:", expediente["estado"])
+            print("Código:", expediente.codigo)
+            print("DNI:", expediente.dni)
+            print("Remitente:", expediente.remitente)
+            print("Sede:", expediente.sede)
+            print("Estado:", expediente.estado)
 
             return
 
@@ -781,7 +806,7 @@ def mostrar_estadisticas(expedientes):
 
     for expediente in expedientes:
 
-        estado = expediente["estado"]
+        estado = expediente.estado
 
         if estado in estados:
             estados[estado] += 1
@@ -798,7 +823,7 @@ def mostrar_estadisticas(expedientes):
     ordenados = sorted(
         expedientes,
         key=lambda x: datetime.strptime(
-            x["fecha"],
+            x.fecha,
             "%d/%m/%Y"
         )
     )
@@ -808,14 +833,14 @@ def mostrar_estadisticas(expedientes):
 
     print("\nExpediente más antiguo:")
     print(
-        f"{mas_antiguo['codigo']} - "
-        f"{mas_antiguo['fecha']}"
+        f"{mas_antiguo.codigo} - "
+        f"{mas_antiguo.fecha}"
     )
 
     print("\nExpediente más reciente:")
     print(
-        f"{mas_reciente['codigo']} - "
-        f"{mas_reciente['fecha']}"
+        f"{mas_reciente.codigo} - "
+        f"{mas_reciente.fecha}"
     )
 
 def exportar_reporte_txt(expedientes):
@@ -842,22 +867,22 @@ def exportar_reporte_txt(expedientes):
 
                 archivo.write(
                     f"Código: "
-                    f"{expediente['codigo']}\n"
+                    f"{expediente.codigo}\n"
                 )
 
                 archivo.write(
                     f"Remitente: "
-                    f"{expediente['remitente']}\n"
+                    f"{expediente.remitente}\n"
                 )
 
                 archivo.write(
                     f"Asunto: "
-                    f"{expediente['asunto']}\n"
+                    f"{expediente.asunto}\n"
                 )
 
                 archivo.write(
                     f"Fecha: "
-                    f"{expediente['fecha']}\n"
+                    f"{expediente.fecha}\n"
                 )
 
                 archivo.write("-" * 50 + "\n")
@@ -900,17 +925,17 @@ def buscar_por_sede(expedientes):
 
     for expediente in expedientes:
 
-        if expediente["sede"] == sede:
+        if expediente.sede == sede:
 
             print("-" * 50)
-            print("Código    :", expediente["codigo"])
-            print("DNI       :", expediente["dni"])
-            print("Remitente :", expediente["remitente"])
-            print("Sede      :", expediente["sede"])
-            print("Asunto    :", expediente["asunto"])
-            print("Fecha     :", expediente["fecha"])
-            print("Documento :", expediente["documento"])
-            print("Estado    :", expediente["estado"])
+            print("Código    :", expediente.codigo)
+            print("DNI       :", expediente.dni)
+            print("Remitente :", expediente.remitente)
+            print("Sede      :", expediente.sede)
+            print("Asunto    :", expediente.asunto)
+            print("Fecha     :", expediente.fecha)
+            print("Documento :", expediente.documento)
+            print("Estado    :", expediente.estado)
 
             encontrados = True
 
@@ -930,16 +955,16 @@ def seguimiento_tramite(expedientes):
 
     for expediente in expedientes:
 
-        if expediente["codigo"] == codigo:
+        if expediente.codigo == codigo:
 
             print("\n✅ EXPEDIENTE ENCONTRADO")
             print("-" * 50)
-            print("Código    :", expediente["codigo"])
-            print("DNI       :", expediente["dni"])
-            print("Remitente :", expediente["remitente"])
-            print("Sede      :", expediente["sede"])
-            print("Estado    :", expediente["estado"])
-            print("Fecha     :", expediente["fecha"])
+            print("Código    :", expediente.codigo)
+            print("DNI       :", expediente.dni)
+            print("Remitente :", expediente.remitente)
+            print("Sede      :", expediente.sede)
+            print("Estado    :", expediente.estado)
+            print("Fecha     :", expediente.fecha)
 
             registrar_bitacora(
                 "CONSULTA_ESTADO",
@@ -965,13 +990,13 @@ def seguimiento_por_dni(expedientes):
 
     for expediente in expedientes:
 
-        if expediente["dni"] == dni:
+        if expediente.dni == dni:
 
             print("-" * 50)
-            print("Código    :", expediente["codigo"])
-            print("Estado    :", expediente["estado"])
-            print("Asunto    :", expediente["asunto"])
-            print("Fecha     :", expediente["fecha"])
+            print("Código    :", expediente.codigo)
+            print("Estado    :", expediente.estado)
+            print("Asunto    :", expediente.asunto)
+            print("Fecha     :", expediente.fecha)
 
             encontrados = True
 
