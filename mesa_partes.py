@@ -30,6 +30,34 @@ class Expediente:
         self.fecha = fecha
         self.documento = documento
         self.estado = estado
+
+    def __str__(self):
+
+        return (
+            f"Código: {self.codigo}\n"
+            f"DNI: {self.dni}\n"
+            f"Remitente: {self.remitente}\n"
+            f"Sede: {self.sede}\n"
+            f"Asunto: {self.asunto}\n"
+            f"Fecha: {self.fecha}\n"
+            f"Documento: {self.documento}\n"
+            f"Estado: {self.estado}"
+        )   
+    
+    def cambiar_estado(self, nuevo_estado):
+
+        if nuevo_estado in ESTADOS_VALIDOS:
+            self.estado = nuevo_estado
+            return True
+        return False
+
+    def resumen(self):
+        return (
+            f"{self.codigo} | "
+            f"{self.remitente} | "
+            f"{self.estado}"
+        )
+
     def to_dict(self):
 
         return {
@@ -56,25 +84,7 @@ class Expediente:
             datos["documento"],
             datos["estado"]
         )
-def __str__(self):
 
-    return (
-        f"Código: {self.codigo}\n"
-        f"DNI: {self.dni}\n"
-        f"Remitente: {self.remitente}\n"
-        f"Sede: {self.sede}\n"
-        f"Asunto: {self.asunto}\n"
-        f"Fecha: {self.fecha}\n"
-        f"Documento: {self.documento}\n"
-        f"Estado: {self.estado}"
-    )
-def cambiar_estado(self, nuevo_estado):
-
-    if nuevo_estado in ESTADOS_VALIDOS:
-        self.estado = nuevo_estado
-        return True
-
-    return False
 class MesaPartes:
 
     def __init__(self):
@@ -101,13 +111,6 @@ ESTADOS_VALIDOS = {"Pendiente", "En Proceso", "Atendido", "Observado", "Archivad
 # ==================================
 # FUNCIONES DE ARCHIVO
 # ==================================
-def resumen(self):
-
-    return (
-        f"{self.codigo} | "
-        f"{self.remitente} | "
-        f"{self.estado}"
-    )
 def generar_codigo_expediente(expedientes):
 
     while True:
@@ -149,19 +152,21 @@ def cargar_expedientes():
 def guardar_expedientes(expedientes):
 
     try:
-        with open(ARCHIVO, mode="w", newline="", encoding="utf-8") as archivo:
+            with open(ARCHIVO, mode="w", newline="", encoding="utf-8") as archivo:
 
-            campos = ["codigo", "dni", "remitente","sede","asunto", "fecha", "documento", "estado"]
+                campos = ["codigo", "dni", "remitente","sede","asunto", "fecha", "documento", "estado"]
 
-            escritor = csv.DictWriter(
-                archivo,
-                fieldnames=campos
-            )
+                escritor = csv.DictWriter(
+                    archivo,
+                    fieldnames=campos
+                )
 
-            escritor.writerows(
-                [expediente.to_dict() for expediente in expedientes]
-            )
-        return True
+                escritor.writeheader()
+
+                escritor.writerows(
+                    [expediente.to_dict() for expediente in expedientes]
+                )
+            return True
 
     except Exception as e:
         print(f"\nError al guardar archivo: {e}")
@@ -503,20 +508,20 @@ def ordenar_expedientes(expedientes):
     if opcion == "1":
 
         expedientes.sort(
-            key=lambda x: x["codigo"]
+            key=lambda x: x.codigo
         )
 
     elif opcion == "2":
 
         expedientes.sort(
-            key=lambda x: x["remitente"].lower()
+            key=lambda x: x.remitente.lower()
         )
 
     elif opcion == "3":
 
         expedientes.sort(
             key=lambda x: datetime.strptime(
-                x["fecha"],
+                x.fecha,
                 "%d/%m/%Y"
             )
         )
@@ -578,13 +583,13 @@ def modificar_expediente(expedientes):
 
     print("\nExpediente encontrado")
     nuevo_remitente = input(
-        f"Nuevo remitente [{expediente['remitente']}] (Enter para mantener): "
+        f"Nuevo remitente [{expediente.remitente}] (Enter para mantener): "
     ).strip()
     nuevo_asunto = input(
-        f"Nuevo asunto [{expediente['asunto']}] (Enter para mantener): "
+        f"Nuevo asunto [{expediente.asunto}] (Enter para mantener): "
     ).strip()
     nueva_fecha = input(
-        f"Nueva fecha [{expediente['fecha']}] (Enter para mantener): "
+        f"Nueva fecha [{expediente.fecha}] (Enter para mantener): "
     ).strip()
 
     if nuevo_remitente and not validar_remitente(nuevo_remitente):
@@ -598,7 +603,10 @@ def modificar_expediente(expedientes):
         return
 
     # El cambio de estado es una operación separada y exclusiva del administrador.
-    original = expediente.copy()
+    original_remitente = expediente.remitente
+    original_asunto = expediente.asunto
+    original_fecha = expediente.fecha
+
     if nuevo_remitente:
         expediente.remitente = nuevo_remitente
     if nuevo_asunto:
@@ -610,9 +618,15 @@ def modificar_expediente(expedientes):
         registrar_bitacora("MODIFICACION", codigo)
         print("\n✅ Expediente modificado correctamente.")
     else:
-        expediente.update(original)
-        print("\n❌ No se pudieron guardar los cambios; se restauraron los datos en memoria.")
 
+        expediente.remitente = original_remitente
+        expediente.asunto = original_asunto
+        expediente.fecha = original_fecha
+
+        print(
+            "\n❌ No se pudieron guardar los cambios; "
+            "se restauraron los datos en memoria."
+        )
 
 def eliminar_expediente(expedientes):
 
@@ -1123,48 +1137,116 @@ def iniciar_sesion():
 
 def cambiar_estado_expediente(expedientes, usuario):
     """Único punto de cambio de estado; exige rol administrador."""
+
     if not usuario or usuario.get("rol") != "administrador":
-        print("Acceso denegado: solo el administrador puede cambiar estados.")
-        registrar_bitacora("CAMBIO_ESTADO_DENEGADO", usuario.get("usuario", "desconocido") if usuario else "sin_sesion")
+
+        print(
+            "Acceso denegado: "
+            "solo el administrador puede cambiar estados."
+        )
+
+        registrar_bitacora(
+            "CAMBIO_ESTADO_DENEGADO",
+            usuario.get("usuario", "desconocido")
+            if usuario else "sin_sesion"
+        )
+
         return
 
-    codigo = input("Código del expediente (0 para volver): ").strip()
+    codigo = input(
+        "Código del expediente (0 para volver): "
+    ).strip()
+
     if codigo == "0":
         return
-    expediente = next((item for item in expedientes if item.get("codigo", "").casefold() == codigo.casefold()), None)
+
+    expediente = next(
+        (
+            item
+            for item in expedientes
+            if item.codigo.casefold() == codigo.casefold()
+        ),
+        None
+    )
+
     if expediente is None:
         print("Expediente no encontrado.")
         return
 
-    print(f"Estado actual: {expediente.get('estado', 'Pendiente')}")
-    opciones = {"1": "Pendiente", "2": "En Proceso", "3": "Atendido", "4": "Observado", "5": "Archivado"}
+    print(
+        f"Estado actual: {expediente.estado}"
+    )
+
+    opciones = {
+        "1": "Pendiente",
+        "2": "En Proceso",
+        "3": "Atendido",
+        "4": "Observado",
+        "5": "Archivado"
+    }
+
     for clave, estado in opciones.items():
+
         print(f"{clave}. {estado}")
+
     print("0. Cancelar")
-    opcion = input("Nuevo estado: ").strip()
+
+    opcion = input(
+        "Nuevo estado: "
+    ).strip()
+
     if opcion == "0":
+
         print("Operación cancelada.")
         return
+
     if opcion not in opciones:
+
         print("Opción de estado inválida.")
         return
-    anterior = expediente.get("estado", "Pendiente")
+
+    anterior = expediente.estado
     nuevo = opciones[opcion]
+
     if anterior == nuevo:
-        print("El expediente ya tiene ese estado.")
+
+        print(
+            "El expediente ya tiene ese estado."
+        )
+
         return
-    expediente["estado"] = nuevo
+
+    expediente.estado = nuevo
+
     if guardar_expedientes(expedientes):
+
         try:
-            registrar_bitacora(f"CAMBIO_ESTADO:{anterior}->{nuevo};USUARIO:{usuario['usuario']}", codigo)
+
+            registrar_bitacora(
+                f"CAMBIO_ESTADO:{anterior}->{nuevo};"
+                f"USUARIO:{usuario['usuario']}",
+                codigo
+            )
+
         except OSError as error:
-            print(f"Advertencia: el estado se guardó, pero falló la bitácora: {error}")
-        print("Estado actualizado correctamente.")
+
+            print(
+                f"Advertencia: el estado se guardó, "
+                f"pero falló la bitácora: {error}"
+            )
+
+        print(
+            "Estado actualizado correctamente."
+        )
+
     else:
-        expediente["estado"] = anterior
-        print("No se pudo guardar el estado; se restauró el valor anterior.")
 
+        expediente.estado = anterior
 
+        print(
+            "No se pudo guardar el estado; "
+            "se restauró el valor anterior."
+        )
 def administrar_usuarios(usuario):
     if not usuario or usuario.get("rol") != "administrador":
         print("Acceso denegado: solo el administrador puede administrar cuentas.")
